@@ -66,8 +66,21 @@
             setToken(response.access_token);
             saveUserData(response.user);
             
-            // Przekieruj do dashboardu
-            window.location.href = '/dashboard';
+            // Pobierz dane użytkownika z API aby sprawdzić role
+            const meResponse = await apiRequest('/me', 'GET');
+            
+            // Sprawdź czy użytkownik ma rolę admin
+            const isAdmin = meResponse.user.roles && meResponse.user.roles.some(role => role.name === 'admin');
+            const isEmployee = meResponse.user.roles && meResponse.user.roles.some(role => role.name === 'employee');
+            
+            // Przekieruj do odpowiedniego dashboardu
+            if (isAdmin) {
+                window.location.href = '/admin/dashboard';
+            } else if (isEmployee) {
+                window.location.href = '/employee/dashboard';
+            } else {
+                window.location.href = '/dashboard';
+            }
             
         } catch (error) {
             console.error('Login error:', error);

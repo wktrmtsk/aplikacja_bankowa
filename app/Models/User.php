@@ -89,6 +89,95 @@ class User extends Authenticatable
     }
 
     /**
+     * Relacja: Użytkownik ma wiele ról
+     */
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'role_user')
+            ->withTimestamps();
+    }
+
+    /**
+     * Relacja: Klienci przypisani do pracownika
+     */
+    public function clients()
+    {
+        return $this->belongsToMany(User::class, 'employee_clients', 'employee_id', 'client_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * Relacja: Pracownicy przypisani do klienta
+     */
+    public function employees()
+    {
+        return $this->belongsToMany(User::class, 'employee_clients', 'client_id', 'employee_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * Sprawdź czy użytkownik ma określoną rolę
+     */
+    public function hasRole(string $roleName): bool
+    {
+        return $this->roles()->where('name', $roleName)->exists();
+    }
+
+    /**
+     * Sprawdź czy użytkownik ma którąkolwiek z podanych ról
+     */
+    public function hasAnyRole(array $roles): bool
+    {
+        return $this->roles()->whereIn('name', $roles)->exists();
+    }
+
+    /**
+     * Przypisz rolę użytkownikowi
+     */
+    public function assignRole(string $roleName): void
+    {
+        $role = Role::where('name', $roleName)->first();
+        if ($role && !$this->hasRole($roleName)) {
+            $this->roles()->attach($role->id);
+        }
+    }
+
+    /**
+     * Usuń rolę użytkownikowi
+     */
+    public function removeRole(string $roleName): void
+    {
+        $role = Role::where('name', $roleName)->first();
+        if ($role) {
+            $this->roles()->detach($role->id);
+        }
+    }
+
+    /**
+     * Czy użytkownik jest adminem
+     */
+    public function isAdmin(): bool
+    {
+        return $this->hasRole(Role::ADMIN);
+    }
+
+    /**
+     * Czy użytkownik jest pracownikiem
+     */
+    public function isEmployee(): bool
+    {
+        return $this->hasRole(Role::EMPLOYEE);
+    }
+
+    /**
+     * Czy użytkownik jest klientem
+     */
+    public function isClient(): bool
+    {
+        return $this->hasRole(Role::CLIENT);
+    }
+
+    /**
      * Sprawdź czy użytkownik ma aktywne konto
      */
     public function isActive(): bool

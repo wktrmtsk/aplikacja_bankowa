@@ -146,7 +146,7 @@ class AuthController extends Controller
     public function me(Request $request)
     {
         $user = $request->user();
-        $user->load('account');
+        $user->load(['account', 'roles']);
 
         return response()->json([
             'user' => [
@@ -163,6 +163,7 @@ class AuthController extends Controller
                 'postal_code' => $user->postal_code,
                 'country' => $user->country,
                 'status' => $user->status,
+                'roles' => $user->roles,
                 'account' => [
                     'balance' => $user->account->balance,
                     'currency' => $user->account->currency,
